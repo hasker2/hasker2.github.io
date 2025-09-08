@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lumen — A sleek one-page front‑end</title>
+  <meta name="description" content="A modern, animated one-file HTML+CSS+JS front page. Clean, fast, and fully responsive with dark/light mode, smooth animations, and zero dependencies." />
+  <meta name="theme-color" content="#0e1014" />
+  <style>
+    /* --------------- Root + Reset --------------- */
+    :root {
+      --bg: #0e1014;
+      --surface: #141824;
+      --text: #e9ecf1;
+      --muted: #a7afc0;
+      --border: rgba(255,255,255,0.08);
+      --glass: rgba(255,255,255,0.06);
+      --shadow: 0 12px 40px rgba(0,0,0,0.35);
+      --blur: 14px;
+      --radius: 16px;
+      --accent-a: #8c6cff;
+      --accent-b: #00e7d5;
+      --accent-c: #5ea1ff;
+      --ring: 0 0 0 8px rgba(100, 200, 255, 0.15);
+      --container: 1200px;
+      --speed: 350ms;
+    }
+    [data-theme="light"] {
+      --bg: #f6f7fb;
+      --surface: #ffffff;
+      --text: #0f1320;
+      --muted: #606a7b;
+      --border: rgba(10,10,10,0.08);
+      --glass: rgba(255,255,255,0.75);
+      --shadow: 0 12px 35px rgba(20,30,60,0.12);
+      --ring: 0 0 0 8px rgba(140, 108, 255, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+    img, svg { display: block; max-width: 100%; }
+
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible, button:focus-visible, input:focus-visible {
+      outline: 0;
+      box-shadow: var(--ring);
+      border-radius: 12px;
+    }
+
+    .container {
+      width: min(92vw, var(--container));
+      margin: 0 auto;
+    }
+
+    /* --------------- Global Flourishes --------------- */
+    .progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      height: 3px;
+      width: 0%;
+      z-index: 9999;
+      background: linear-gradient(90deg, var(--accent-a), var(--accent-b), var(--accent-c));
+      box-shadow: 0 0 12px rgba(120,180,255,.7);
+      transition: width .1s linear;
+      pointer-events: none;
+    }
+    .bg-orbs {
+      position: fixed;
+      inset: -20vmax -20vmax auto auto;
+      z-index: -2;
+      filter: blur(60px) saturate(120%);
+      opacity: .45;
+      pointer-events: none;
+      width: 90vmax; height: 90vmax;
+      background:
+        radial-gradient(35% 35% at 20% 30%, rgba(140,108,255,.7) 0%, transparent 60%),
+        radial-gradient(30% 30% at 80% 20%, rgba(0,231,213,.7) 0%, transparent 60%),
+        radial-gradient(30% 30% at 60% 80%, rgba(94,161,255,.65) 0%, transparent 60%);
+      animation: drift 30s ease-in-out infinite alternate;
+    }
+    @keyframes drift {
+      0% { transform: translate3d(0,0,0) rotate(0deg) scale(1); }
+      100% { transform: translate3d(-5vmax, -3vmax, 0) rotate(20deg) scale(1.08); }
+    }
+
+    /* --------------- Header --------------- */
+    .skip {
+      position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden;
+    }
+    .skip:focus {
+      position: fixed; left: 16px; top: 16px; width: auto; height: auto;
+      padding: 10px 14px; background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px; z-index: 10000;
+    }
+
+    header.nav {
+      position: fixed; inset: 16px 16px auto 16px;
+      z-index: 1000;
+      background: color-mix(in oklab, var(--glass) 100%, transparent);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(var(--blur)) saturate(120%);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .nav-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; padding: 12px 16px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: 0.4px;
+    }
+    .brand-badge {
+      width: 28px; height: 28px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+      box-shadow: 0 8px 22px rgba(100,140,255,.35), inset 0 0 0 1px var(--border);
+    }
+    nav.menu {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .menu a {
+      padding: 8px 12px; color: var(--muted); border-radius: 10px; border: 1px solid transparent;
+      transition: color var(--speed), background var(--speed), border var(--speed), transform var(--speed);
+    }
+    .menu a:hover { color: var(--text); background: rgba(255,255,255,0.05); border-color: var(--border); transform: translateY(-1px); }
+
+    .actions { display: flex; align-items: center; gap: 10px; }
+    .icon-btn {
+      border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--glass) 100%, transparent);
+      backdrop-filter: blur(var(--blur));
+      color: var(--text);
+      padding: 8px 10px; border-radius: 12px;
+      display: grid; place-items: center; cursor: pointer;
+      transition: transform var(--speed), background var(--speed), border var(--speed);
+    }
+    .icon-btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.08); }
+    .hamburger { display: none; }
+
+    @media (max-width: 880px) {
+      nav.menu { 
+        position: fixed; inset: 70px 16px auto 16px;
+        background: color-mix(in oklab, var(--glass) 100%, transparent);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(var(--blur));
+        border-radius: 16px; box-shadow: var(--shadow);
+        padding: 12px; display: none; flex-direction: column; align-items: stretch; gap: 6px;
+      }
+      header.nav.open nav.menu { display: flex; }
+      .hamburger { display: inline-grid; }
+    }
+
+    /* --------------- Hero --------------- */
+    .hero {
+      padding-top: 110px; /* space for fixed nav */
+      position: relative;
+    }
+    .hero .container {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: clamp(24px, 4vw, 48px);
+      align-items: center;
+      min-height: calc(100vh - 140px);
+    }
+    @media (max-width: 920px) {
+      .hero .container { grid-template-columns: 1fr; padding-top: 20px; }
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 1.4px;
+      color: var(--muted); background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border); border-radius: 999px; margin-bottom: 14px;
+    }
+    .title {
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.05;
+      font-weight: 800;
+      margin: 8px 0 14px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b) 40%, var(--accent-c) 80%);
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      filter: drop-shadow(0 8px 30px rgba(90,140,255,.25));
+    }
+    .sub {
+      color: var(--muted); font-size: clamp(16px, 2.4vw, 20px);
+      max-width: 60ch;
+    }
+    .cta {
+      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px;
+    }
+    .btn {
+      border: 1px solid var(--border); padding: 12px 16px; border-radius: 14px;
+      display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      transition: transform var(--speed), box-shadow var(--speed), background var(--speed);
+    }
+    .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,0.07); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+      border: none; color: #0a0d12; font-weight: 700;
+      box-shadow: 0 12px 30px rgba(100,150,255,.35);
+    }
+    .trust {
+      display: flex; align-items: center; gap: 12px; margin-top: 24px; color: var(--muted);
+      flex-wrap: wrap;
+    }
+    .avatars {
+      display: flex; align-items: center;
+    }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid var(--surface); box-shadow: 0 4px 12px rgba(0,0,0,.2);
+      margin-left: -8px; background: #ddd; overflow: hidden;
+    }
+    .avatar:first-child { margin-left: 0; }
+
+    .hero-visual {
+      position: relative; aspect-ratio: 4/3; min-height: 320px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0.02));
+      border: 1px solid var(--border);
+      overflow: hidden; box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+      isolation: isolate;
+    }
+    .floating {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+      opacity: .65; filter: blur(20px);
+      background:
+        radial-gradient(40% 30% at 20% 20%, rgba(140,108,255,.6), transparent 60%),
+        radial-gradient(35% 35% at 80% 30%, rgba(0,231,213,.5), transparent 60%),
+        radial-gradient(30% 25% at 60% 80%, rgba(94,161,255,.45), transparent 60%);
+      animation: floaty 16s ease-in-out infinite alternate;
+    }
+    @keyframes floaty {
+      to { transform: translate3d(1.8rem, -1.3rem, 0) scale(1.02); }
+    }
+    .frames { position: absolute; inset: 0; display: grid; place-items: center; z-index: 1; }
+    .frame {
+      width: 62%; max-width: 460px; border-radius: 16px; overflow: hidden;
+      box-shadow: 0 22px 40px rgba(0,0,0,.4), inset 0 0 0 1px var(--border);
+      transform-origin: center;
+      transition: transform 600ms cubic-bezier(.2,.8,.2,1), filter 600ms;
+    }
+    .frame img { width: 100%; height: auto; display: block; }
+    .f2 { position: absolute; transform: rotate(-7deg) translate(-28%, -6%); width: 50%; opacity: .9; }
+    .f3 { position: absolute; transform: rotate(9deg) translate(30%, 12%); width: 46%; opacity: .9; }
+    .hero-visual:hover .frame { filter: saturate(1.05) brightness(1.02); }
+    .hero-visual:hover .f2 { transform: rotate(-10deg) translate(-32%, -8%); }
+    .hero-visual:hover .f3 { transform: rotate(12deg) translate(34%, 16%); }
+
+    /* --------------- Section Generic --------------- */
+    section.section { padding: clamp(48px, 8vw, 96px) 0; position: relative; }
+    .section h2 {
+      font-size: clamp(26px, 3.8vw, 40px); margin: 0 0 12px; letter-spacing: -0.02em;
+    }
+    .kicker { color: var(--muted); margin-bottom: 24px; }
+
+    /* --------------- Features --------------- */
+    .grid {
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .feature {
+      grid-column: span 4; min-height: 180px;
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px; position: relative; overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: transform var(--speed), border var(--speed), background var(--speed);
+    }
+    .feature:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--accent-b) 25%, var(--border)); }
+    .feature .icon {
+      width: 38px; height: 38px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+      display: grid; place-items: center; font-size: 20px; color: #0a0d12; font-weight: 800;
+      box-shadow: 0 10px 22px rgba(120,160,255,.35);
+    }
+    .feature h3 { margin: 10px 0 6px; font-size: 18px; }
+    .feature p { margin: 0; color: var(--muted); }
+    @media (max-width: 980px) {
+      .feature { grid-column: span 6; }
+    }
+    @media (max-width: 640px) {
+      .feature { grid-column: span 12; }
+    }
+
+    /* --------------- Gallery --------------- */
+    .gallery {
+      display: grid; gap: 12px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .shot {
+      grid-column: span 4; border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--border); position: relative;
+      box-shadow: var(--shadow);
+      isolation: isolate;
+      transition: transform var(--speed), border var(--speed), filter var(--speed);
+    }
+    .shot:hover { transform: translateY(-3px); filter: saturate(1.05); border-color: color-mix(in oklab, var(--accent-a) 25%, var(--border)); }
+    .shot img { width: 100%; height: 100%; object-fit: cover; display: block; aspect-ratio: 4/3; }
+    .shot .tag {
+      position: absolute; inset: auto 10px 10px 10px; padding: 6px 10px;
+      background: color-mix(in oklab, var(--glass) 100%, transparent);
+      border: 1px solid var(--border); border-radius: 12px; color: var(--muted);
+      backdrop-filter: blur(var(--blur));
+    }
+    @media (max-width: 980px) {
+      .shot { grid-column: span 6; }
+    }
+    @media (max-width: 640px) {
+      .shot { grid-column: span 12; }
+    }
+
+    /* --------------- Testimonials (Slider) --------------- */
+    .slider {
+      position: relative; overflow: hidden; border-radius: 18px;
+      border: 1px solid var(--border); background: color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow: var(--shadow);
+    }
+    .slides {
+      display: flex; transition: transform 700ms cubic-bezier(.2,.8,.2,1);
+    }
+    .slide {
+      min-width: 100%; padding: 26px 22px; display: grid; gap: 8px; align-content: center;
+      min-height: 220px;
+    }
+    .quote { font-size: clamp(18px, 2.6vw, 22px); }
+    .who { color: var(--muted); }
+    .slider-controls {
+      position: absolute; inset: auto 10px 10px auto; display: flex; gap: 8px;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.25);
+      border: 1px solid var(--border);
+      transition: transform var(--speed), background var(--speed);
+    }
+    .dot.active { background: linear-gradient(135deg, var(--accent-a), var(--accent-b)); transform: scale(1.25); }
+
+    /* --------------- Pricing --------------- */
+    .plans {
+      display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr);
+    }
+    .plan {
+      grid-column: span 4; background: color-mix(in oklab, var(--surface) 92%, transparent);
+      border: 1px solid var(--border); border-radius: 18px; padding: 18px;
+      box-shadow: var(--shadow); position: relative; overflow: hidden;
+      transition: transform var(--speed), border var(--speed), background var(--speed);
+    }
+    .plan:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--accent-c) 25%, var(--border)); }
+    .plan.best { outline: 2px solid color-mix(in oklab, var(--accent-a) 40%, transparent); }
+    .price { font-size: 36px; font-weight: 800; margin: 6px 0 14px; }
+    .features li { list-style: none; margin: 8px 0; color: var(--muted); }
+    .features li::before { content: "✔"; color: var(--accent-b); margin-right: 8px; }
+    @media (max-width: 980px) {
+      .plan { grid-column: span 6; }
+    }
+    @media (max-width: 640px) {
+      .plan { grid-column: span 12; }
+    }
+
+    /* --------------- CTA --------------- */
+    .cta-box {
+      display: grid; gap: 14px; padding: 20px;
+      border-radius: 18px; border: 1px solid var(--border);
+      background: color-mix(in oklab, var(--surface) 92%, transparent);
+      box-shadow: var(--shadow);
+    }
+    .field {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    input[type="email"] {
+      flex: 1 1 260px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04); color: var(--text);
+      transition: border var(--speed), background var(--speed);
+    }
+    input[type="email"]::placeholder { color: var(--muted); }
+    input[type="email"]:focus { background: rgba(255,255,255,0.07); border-color: color-mix(in oklab, var(--accent-b) 30%, var(--border)); }
+
+    /* --------------- Footer --------------- */
+    footer {
+      padding: 26px 0 48px; color: var(--muted);
+    }
+    .foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      border-top: 1px solid var(--border); padding-top: 14px;
+    }
+    .social { display: flex; gap: 8px; }
+    .chip {
+      padding: 6px 10px; border-radius: 999px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04); color: var(--text);
+      transition: background var(--speed), transform var(--speed);
+    }
+    .chip:hover { background: rgba(255,255,255,0.08); transform: translateY(-2px); }
+
+    /* --------------- Reveals + Tilt --------------- */
+    .reveal { opacity: 0; transform: translateY(12px) scale(.98); transition: opacity .7s, transform .7s; }
+    .reveal.show { opacity: 1; transform: translateY(0) scale(1); }
+    .tilt { transform-style: preserve-3d; will-change: transform; }
+
+    /* --------------- To Top --------------- */
+    #toTop {
+      position: fixed; inset: auto 16px 16px auto; z-index: 900;
+      opacity: 0; visibility: hidden; transform: translateY(10px);
+      transition: opacity var(--speed), transform var(--speed), visibility var(--speed);
+    }
+    #toTop.show { opacity: 1; visibility: visible; transform: translateY(0); }
+
+    /* --------------- Reduce Motion --------------- */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+      .progress { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip">Skip to content</a>
+  <div class="progress" aria-hidden="true"></div>
+  <div class="bg-orbs" aria-hidden="true"></div>
+
+  <header class="nav" role="banner">
+    <div class="nav-inner container">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true"></div>
+        Lumen
+      </div>
+      <nav class="menu" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#testimonials">Praise</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <div class="actions">
+        <button id="themeToggle" class="icon-btn" aria-label="Toggle theme" title="Toggle theme">🌙</button>
+        <button id="menuBtn" class="icon-btn hamburger" aria-label="Menu" title="Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="reveal">
+          <span class="eyebrow">Design x Code x Launch</span>
+          <h1 class="title">Turn bold ideas into beautiful products</h1>
+          <p class="sub">
+            A sleek, modern one‑file front page with tasteful motion, dark/light themes,
+            and zero dependencies. Built to be fast, responsive, and delightful.
+          </p>
+          <div class="cta">
+            <a class="btn btn-primary" href="#pricing">Get started →</a>
+            <a class="btn" href="#gallery">Explore work</a>
+          </div>
+          <div class="trust">
+            <div class="avatars" aria-hidden="true">
+              <img class="avatar" src="https://placehold.co/600x400/EEE/31343C" alt="" />
+              <img class="avatar" src="https://placehold.co/600x400/EEE/31343C" alt="" />
+              <img class="avatar" src="https://placehold.co/600x400/EEE/31343C" alt="" />
+              <img class="avatar" src="https://placehold.co/600x400/EEE/31343C" alt="" />
+            </div>
+            Trusted by 100+ creators and startups
+          </div>
+        </div>
+
+        <div class="hero-visual reveal tilt" aria-hidden="true">
+          <div class="floating"></div>
+          <div class="frames">
+            <img class="frame f1" src="https://placehold.co/600x400/EEE/31343C" alt="Showcase placeholder" />
+            <img class="frame f2" src="https://placehold.co/600x400/EEE/31343C" alt="Showcase placeholder" />
+            <img class="frame f3" src="https://placehold.co/600x400/EEE/31343C" alt="Showcase placeholder" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features" class="section">
+      <div class="container">
+        <h2 class="reveal">Everything you need to ship</h2>
+        <p class="kicker reveal">Clean components, smooth interactions, and accessible-by-default design.</p>
+
+        <div class="grid">
+          <div class="feature reveal tilt">
+            <div class="icon">🎨</div>
+            <h3>Polished UI</h3>
+            <p>Sharp typography, glass surfaces, and a tasteful glow for that premium feel.</p>
+          </div>
+          <div class="feature reveal tilt">
+            <div class="icon">⚡</div>
+            <h3>Fast by default</h3>
+            <p>Zero dependencies, tiny footprint, and GPU-accelerated transitions.</p>
+          </div>
+          <div class="feature reveal tilt">
+            <div class="icon">🧩</div>
+            <h3>Composable</h3>
+            <p>Drop-in sections for hero, features, gallery, testimonials, and pricing.</p>
+          </div>
+          <div class="feature reveal tilt">
+            <div class="icon">🌗</div>
+            <h3>Light/Dark</h3>
+            <p>Auto theme with manual override, saved to local storage.</p>
+          </div>
+          <div class="feature reveal tilt">
+            <div class="icon">🔐</div>
+            <h3>Accessible</h3>
+            <p>Keyboard focus styles, reduced-motion support, and semantic HTML.</p>
+          </div>
+          <div class="feature reveal tilt">
+            <div class="icon">🚀</div>
+            <h3>Ready to ship</h3>
+            <p>Copy as one file, customize text, swap in real images, and launch.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gallery -->
+    <section id="gallery" class="section">
+      <div class="container">
+        <h2 class="reveal">Recent work</h2>
+        <p class="kicker reveal">Use these slots to show your projects. Replace the placeholders anytime.</p>
+
+        <div class="gallery">
+          <a class="shot reveal tilt" href="#" aria-label="Project 1">
+            <img src="https://placehold.co/600x400/EEE/31343C" alt="Project placeholder 1" loading="lazy" />
+            <span class="tag">Marketing site</span>
+          </a>
+          <a class="shot reveal tilt" href="#" aria-label="Project 2">
+            <img src="https://placehold.co/600x400/EEE/31343C" alt="Project placeholder 2" loading="lazy" />
+            <span class="tag">App dashboard</span>
+          </a>
+          <a class="shot reveal tilt" href="#" aria-label="Project 3">
+            <img src="https://placehold.co/600x400/EEE/31343C" alt="Project placeholder 3" loading="lazy" />
+            <span class="tag">Product page</span>
+          </a>
+          <a class="shot reveal tilt" href="#" aria-label="Project 4">
+            <img src="https://placehold.co/600x400/EEE/31343C" alt="Project placeholder 4" loading="lazy" />
+            <span class="tag">Portfolio</span>
+          </a>
+          <a class="shot reveal tilt" href="#" aria-label="Project 5">
+            <img src="https://placehold.co/600x400/EEE/31343C" alt="Project placeholder 5" loading="lazy" />
+            <span class="tag">Landing page</span>
+          </a>
+          <a class="shot reveal tilt" href="#" aria-label="Project 6">
+            <img src="https://placehold.co/600x400/EEE/31343C" alt="Project placeholder 6" loading="lazy" />
+            <span class="tag">Brand system</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="section">
+      <div class="container">
+        <h2 class="reveal">What people say</h2>
+        <p class="kicker reveal">Kind words from happy clients and collaborators.</p>
+
+        <div class="slider reveal" role="region" aria-label="Testimonials">
+          <div class="slides" id="slides">
+            <figure class="slide">
+              <blockquote class="quote">“Lumen feels premium out of the box. It took me one afternoon to tailor and launch.”</blockquote>
+              <figcaption class="who">— Alex R., Product Designer</figcaption>
+            </figure>
+            <figure class="slide">
+              <blockquote class="quote">“I love the motion and the theme toggle. Small, clean, and delightful.”</blockquote>
+              <figcaption class="who">— Priya M., Frontend Engineer</figcaption>
+            </figure>
+            <figure class="slide">
+              <blockquote class="quote">“A gorgeous starting point for any landing page. Accessible and responsive.”</blockquote>
+              <figcaption class="who">— Jordan C., Indie Maker</figcaption>
+            </figure>
+          </div>
+          <div class="slider-controls" aria-hidden="true">
+            <div class="dot" data-slide="0"></div>
+            <div class="dot" data-slide="1"></div>
+            <div class="dot" data-slide="2"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="section">
+      <div class="container">
+        <h2 class="reveal">Simple pricing</h2>
+        <p class="kicker reveal">Start free, upgrade when you’re ready.</p>
+
+        <div class="plans">
+          <div class="plan reveal tilt">
+            <h3>Starter</h3>
+            <p class="price">$0</p>
+            <ul class="features">
+              <li>All core sections</li>
+              <li>Light/Dark theme</li>
+              <li>Basic animations</li>
+              <li>Community support</li>
+            </ul>
+            <div class="cta" style="margin-top:10px">
+              <a class="btn" href="#contact">Use Starter</a>
+            </div>
+          </div>
+          <div class="plan best reveal tilt">
+            <h3>Pro</h3>
+            <p class="price">$29</p>
+            <ul class="features">
+              <li>Advanced motion + reveal</li>
+              <li>Custom color presets</li>
+              <li>Priority support</li>
+              <li>Unlimited projects</li>
+            </ul>
+            <div class="cta" style="margin-top:10px">
+              <a class="btn btn-primary" href="#contact">Go Pro</a>
+            </div>
+          </div>
+          <div class="plan reveal tilt">
+            <h3>Team</h3>
+            <p class="price">$99</p>
+            <ul class="features">
+              <li>All Pro features</li>
+              <li>Team collaboration</li>
+              <li>Design tokens</li>
+              <li>Slack support</li>
+            </ul>
+            <div class="cta" style="margin-top:10px">
+              <a class="btn" href="#contact">Contact sales</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact / CTA -->
+    <section id="contact" class="section">
+      <div class="container">
+        <div class="cta-box reveal">
+          <h2>Let’s build something beautiful</h2>
+          <p class="kicker">Drop your email and we’ll send a quick start kit.</p>
+          <form id="signup" class="field" action="#" novalidate>
+            <input type="email" id="email" name="email" placeholder="you@domain.com" aria-label="Email address" required />
+            <button class="btn btn-primary" type="submit">Get the kit</button>
+          </form>
+          <div id="status" role="status" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container foot">
+      <div>© <span id="year"></span> Lumen. Crafted with care.</div>
+      <div class="social">
+        <a class="chip" href="#" aria-label="Twitter">🐦</a>
+        <a class="chip" href="#" aria-label="GitHub">🐙</a>
+        <a class="chip" href="#" aria-label="Dribbble">🏀</a>
+      </div>
+    </div>
+  </footer>
+
+  <button id="toTop" class="icon-btn" aria-label="Back to top" title="Back to top">↑</button>
+
+  <noscript>
+    <div class="container" style="margin-top:1rem;color:#ffdd99">
+      JavaScript is disabled. This page still works, but interactions and animations are limited.
+    </div>
+  </noscript>
+
+  <script>
+    // --------------- Theme Toggle ---------------
+    (function theme() {
+      const root = document.documentElement;
+      const btn = document.getElementById('themeToggle');
+
+      function systemPrefersDark() {
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      }
+      function applyTheme(val) {
+        if (val === 'auto') {
+          root.setAttribute('data-theme', systemPrefersDark() ? 'dark' : 'light');
+        } else {
+          root.setAttribute('data-theme', val);
+        }
+        btn.textContent = root.getAttribute('data-theme') === 'dark' ? '🌙' : '🌞';
+        localStorage.setItem('theme', val);
+      }
+
+      const stored = localStorage.getItem('theme') || 'auto';
+      applyTheme(stored);
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if ((localStorage.getItem('theme') || 'auto') === 'auto') applyTheme('auto');
+      });
+
+      btn.addEventListener('click', () => {
+        const current = localStorage.getItem('theme') || 'auto';
+        const next = current === 'dark' ? 'light' : current === 'light' ? 'auto' : 'dark';
+        applyTheme(next);
+        btn.title = `Theme: ${next}`;
+        btn.setAttribute('aria-label', `Theme: ${next}`);
+      });
+    })();
+
+    // --------------- Mobile Nav Toggle ---------------
+    (function nav() {
+      const header = document.querySelector('header.nav');
+      const btn = document.getElementById('menuBtn');
+      const links = document.querySelectorAll('.menu a');
+      btn.addEventListener('click', () => header.classList.toggle('open'));
+      links.forEach(a => a.addEventListener('click', () => header.classList.remove('open')));
+    })();
+
+    // --------------- Scroll Progress + To Top ---------------
+    (function scrollUI() {
+      const bar = document.querySelector('.progress');
+      const toTop = document.getElementById('toTop');
+      const onScroll = () => {
+        const h = document.documentElement;
+        const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight);
+        bar.style.width = (scrolled * 100).toFixed(2) + '%';
+        if (h.scrollTop > 800) toTop.classList.add('show'); else toTop.classList.remove('show');
+      };
+      document.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    })();
+
+    // --------------- Reveal on Scroll ---------------
+    (function reveal() {
+      const els = document.querySelectorAll('.reveal');
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('show');
+            io.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.2 });
+      els.forEach(el => io.observe(el));
+    })();
+
+    // --------------- Subtle Tilt Effect ---------------
+    (function tilt() {
+      const els = document.querySelectorAll('.tilt');
+      const conf = { max: 10, scale: 1.02 };
+      els.forEach(el => {
+        let rect = null;
+        const updateRect = () => rect = el.getBoundingClientRect();
+        const move = (e) => {
+          if (!rect) updateRect();
+          const x = (e.clientX - rect.left) / rect.width;
+          const y = (e.clientY - rect.top) / rect.height;
+          const rx = (conf.max / 2 - y * conf.max).toFixed(2);
+          const ry = (-conf.max / 2 + x * conf.max).toFixed(2);
+          el.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg) scale(${conf.scale})`;
+        };
+        const leave = () => {
+          el.style.transform = 'perspective(800px) rotateX(0) rotateY(0) scale(1)';
+        };
+        el.addEventListener('mouseenter', updateRect);
+        el.addEventListener('mousemove', move);
+        el.addEventListener('mouseleave', leave);
+        window.addEventListener('resize', updateRect);
+      });
+    })();
+
+    // --------------- Testimonials Slider ---------------
+    (function slider() {
+      const slides = 
